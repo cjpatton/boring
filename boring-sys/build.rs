@@ -442,30 +442,30 @@ fn get_extra_clang_args_for_bindgen() -> Vec<String> {
     params
 }
 
-fn ensure_patches_applied() -> io::Result<()> {
+fn ensure_patches_applied() {
     let out_dir = env::var("OUT_DIR").unwrap();
-    let mut lock_file = LockFile::open(&PathBuf::from(&out_dir).join(".patch_lock"))?;
+    let mut lock_file = LockFile::open(&PathBuf::from(&out_dir).join(".patch_lock"))
+        .expect("failed to open `.path_lock`");
     let src_path = get_boringssl_source_path();
     let has_git = Path::new(&src_path).join(".git").exists();
 
-    lock_file.lock()?;
+    lock_file.lock().expect("failed to lock");
 
     // NOTE: init git in the copied files, so we can apply patches
     if !has_git {
-        run_command(Command::new("git").args(["init"]).current_dir(&src_path))?;
+        run_command(Command::new("git").args(["init"]).current_dir(&src_path))
+            .expect(&format!("`git init {}` failed", src_path));
     }
 
     if cfg!(feature = "pq-experimental") {
         println!("cargo:warning=applying experimental post quantum crypto patch to boringssl");
-        apply_patch("boring-pq.patch")?;
+        apply_patch("boring-pq.patch").expect("failed to apply `boring-pq.patch`");
     }
 
     if cfg!(feature = "rpk") {
         println!("cargo:warning=applying RPK patch to boringssl");
-        apply_patch("rpk.patch")?;
+        apply_patch("rpk.patch").expect("failed to apply `rpk.patch`");
     }
-
-    Ok(())
 }
 
 fn apply_patch(patch_name: &str) -> io::Result<()> {
@@ -509,7 +509,7 @@ fn run_command(command: &mut Command) -> io::Result<Output> {
 }
 
 fn build_boring_from_sources() -> String {
-    ensure_patches_applied().unwrap();
+    ensure_patches_applied();
 
     let mut cfg = get_boringssl_cmake_config();
 

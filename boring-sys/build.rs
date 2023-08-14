@@ -530,7 +530,8 @@ fn build_boring_from_sources() -> String {
     }
 
     if cfg!(feature = "fips-link-precompiled") {
-        cfg.define("FIPS", "1");
+        cfg.cxxflag("-DFIPS=1");
+        cfg.cflag("-DFIPS=1");
     }
 
     cfg.build_target("ssl").build();

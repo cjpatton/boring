@@ -23,8 +23,8 @@ pub fn enabled() -> bool {
 
 #[test]
 fn is_enabled() {
-    #[cfg(feature = "fips")]
-    assert!(enabled());
-    #[cfg(not(feature = "fips"))]
-    assert!(!enabled());
+    #[cfg(any(feature = "fips", feature = "fips-link-precompiled"))]
+    assert!(enabled(), "FIPS mode is disabled (want enabled)");
+    #[cfg(not(any(feature = "fips", feature = "fips-link-precompiled")))]
+    assert!(!enabled(), "FIPS mode is enabled (want disabled)");
 }
